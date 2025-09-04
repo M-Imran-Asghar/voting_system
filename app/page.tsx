@@ -1,103 +1,144 @@
+"use client";
 import Image from "next/image";
+import { useState, useEffect } from "react";
+import { FaRegThumbsUp } from "react-icons/fa";
+
+// Define type for Person with votes
+interface Person {
+  id: number;
+  name: string;
+  img: string;
+  votes: number;
+}
+
+// Static data (can later be replaced with API data)
+const personDetails: Person[] = [
+  { id: 1, name: "Person A", img: "/assets/bg-img.png", votes: 0 },
+  { id: 2, name: "Person B", img: "/assets/bg-img.png", votes: 0 },
+];
 
 export default function Home() {
-  return (
-    <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="font-mono list-inside list-decimal text-sm/6 text-center sm:text-left">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] font-mono font-semibold px-1 py-0.5 rounded">
-              app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+  const [currentTime, setCurrentTime] = useState<Date>(new Date());
+  const [personData, setPersonData] = useState<Person[]>(personDetails);
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+  // Countdown state
+  const [timeLeft, setTimeLeft] = useState({
+    hours: 0,
+    minutes: 0,
+    seconds: 0,
+  });
+
+  // Set a target end time (e.g., 1 hour from now)
+  const targetTime = new Date();
+  targetTime.setMinutes(targetTime.getMinutes() + 10); 
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentTime(new Date());
+
+      // Calculate time difference
+      const now = new Date().getTime();
+      const distance = targetTime.getTime() - now;
+
+      if (distance <= 0) {
+        clearInterval(timer);
+        setTimeLeft({ hours: 0, minutes: 0, seconds: 0 });
+      } else {
+        const hours = Math.floor((distance / (1000 * 60 * 60)) % 24);
+        const minutes = Math.floor((distance / (1000 * 60)) % 60);
+        const seconds = Math.floor((distance / 1000) % 60);
+
+        setTimeLeft({ hours, minutes, seconds });
+      }
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, []);
+
+  const handleVoteBtn = (id: number): void => {
+    setPersonData(prevData =>
+      prevData.map(person =>
+        person.id === id
+          ? { ...person, votes: person.votes + 1 }
+          : person
+      )
+    );
+  };
+
+  return (
+    <div>
+      {/* NAVBAR + TIME */}
+      <div className="bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-500 mx-10 mt-6 p-6 rounded-xl shadow-2xl border border-white/20 flex flex-col justify-center items-center">
+        <nav>
+          <ul className="flex space-x-8 text-white font-bold text-lg">
+            <li className="cursor-pointer group relative">
+              <span className="text-white group-hover:text-yellow-300 transition-all duration-300 px-4 py-2 rounded-md group-hover:bg-white/10">
+                Home
+              </span>
+            </li>
+            <li className="cursor-pointer group relative">
+              <span className="text-white group-hover:text-yellow-300 transition-all duration-300 px-4 py-2 rounded-md group-hover:bg-white/10">
+                About
+              </span>
+            </li>
+            <li className="cursor-pointer group relative">
+              <span className="text-white group-hover:text-yellow-300 transition-all duration-300 px-4 py-2 rounded-md group-hover:bg-white/10">
+                Contact
+              </span>
+            </li>
+          </ul>
+        </nav>
+
+        {/* Time Counter */}
+        <div className="mt-6 flex flex-col items-center justify-center text-white">
+          <h2 className="text-2xl font-bold mb-2">Voting Ends In</h2>
+          <div className="text-3xl font-mono font-extrabold">
+            {timeLeft.hours.toString().padStart(2, "0")}:
+            {timeLeft.minutes.toString().padStart(2, "0")}:
+            {timeLeft.seconds.toString().padStart(2, "0")}
+          </div>
+          
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+      </div>
+
+      {/* PEOPLE SECTION */}
+      <div className="bg-white mx-10 mb-6 p-6 rounded-xl shadow-2xl border border-white/20 flex flex-col justify-center items-center">
+        {personData.length > 0 ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+            {personData.map((person) => (
+              <div
+                key={person.id}
+                className="flex flex-col items-center bg-gray-100 p-4 rounded-lg shadow hover:shadow-lg transition"
+              >
+                <div className="relative w-32 h-32">
+                  <Image
+                    src={person.img}
+                    alt={person.name}
+                    fill
+                    className="rounded-full object-cover border-4 border-indigo-500 shadow-md"
+                  />
+                </div>
+                <p className="mt-3 text-lg font-semibold text-gray-800">{person.name}</p>
+                <div className="flex items-center mt-2">
+                  <button
+                    className="text-3xl text-gray-600 hover:text-blue-500 transition-all duration-300 ease-in-out transform hover:scale-125 hover:-translate-y-1"
+                    onClick={() => handleVoteBtn(person.id)}
+                  >
+                    <FaRegThumbsUp />
+                  </button>
+                  <span className="ml-2 text-gray-700">Total Vote: {person.votes}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="text-gray-500 font-medium">Data not found</div>
+        )}
+
+        <div className="mt-6 p-4 bg-gradient-to-r from-purple-500 via-pink-500 to-red-500 rounded-lg shadow-lg text-center text-white w-full">
+          
+        </div>
+      </div>
     </div>
   );
 }
