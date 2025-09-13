@@ -1,4 +1,5 @@
 "use client"
+import Link from 'next/link';
 import React, { useState } from 'react';
 
 function Signup() {
@@ -90,7 +91,7 @@ function Signup() {
             </svg>
           </div>
           <p className="text-sm text-purple-200 mt-4">
-            Already have an account? <a href="#" className="font-semibold hover:underline">Login here</a>
+            Already have an account? <Link href="/login" className="font-semibold hover:underline">Login here</Link>
           </p>
         </div>
         

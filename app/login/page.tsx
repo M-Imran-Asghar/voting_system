@@ -84,7 +84,7 @@ function Login() {
             </svg>
           </div>
           <p className="text-sm text-purple-200 mt-4">
-            Don't have an account? <Link href={"/Signup"} className="font-semibold hover:underline">Sign up here</Link>
+            Don't have an account? <Link href="/signup" className="font-semibold hover:underline">Sign up</Link>
           </p>
         </div>
         
