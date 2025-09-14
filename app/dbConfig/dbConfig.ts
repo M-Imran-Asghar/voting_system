@@ -2,7 +2,13 @@ import mongoose from "mongoose";
 
 export async function connect() {
     try {
-        mongoose.connect(process.env.DATABASE_URI!)
+        const uri = process.env.DATABASE_URI
+        // "mongodb+srv://imranasghar:imran123@voting-app.xb1xnsj.mongodb.net/?retryWrites=true&w=majority&appName=voting-app"; 
+    if (!uri) {
+      throw new Error("DATABASE_URI is not defined in .env");
+    }
+    console.log("DB uri", uri)
+        mongoose.connect(uri)
         const connection = mongoose.connection
 
         connection.on("connected", () => {
@@ -12,7 +18,7 @@ export async function connect() {
 
         connection.on("error", (err) => {
             console.log("mongoDb connection error" + err);
-            process.exit()
+            process.exit(1)
             
         })
     } catch (error) {
