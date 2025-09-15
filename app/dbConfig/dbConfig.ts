@@ -2,8 +2,8 @@ import mongoose from "mongoose";
 
 export async function connect() {
     try {
-        const uri = process.env.DATABASE_URI
-        // const uri ="mongodb+srv://imranasghar:imran123@voting-app.xb1xnsj.mongodb.net/?retryWrites=true&w=majority&appName=voting-app"; 
+        // const uri = process.env.DATABASE_URI
+        const uri ="mongodb+srv://imranasghar:imran123@voting-app.xb1xnsj.mongodb.net/?retryWrites=true&w=majority&appName=voting-app"; 
     if (!uri) {
       throw new Error("DATABASE_URI is not defined in .env");
     }

@@ -6,7 +6,7 @@ import jwt from "jsonwebtoken"
 
 connect();
 
-export async function Post(request: NextRequest) {
+export async function POST(request: NextRequest) {
     try {
         const reqBody =await request.json() 
     const { email, password } = reqBody
@@ -34,13 +34,14 @@ export async function Post(request: NextRequest) {
         email: user.email
     }
 
-    const token = jwt.sign(tokenData, process.env.TOKEN_SECRAT!, {expiresIn: "1d"})
+    const token = jwt.sign(tokenData, "abcedfghjklmnopqrstuvwxyzABCDEFGHJKLMNOPQRSTUVWXYZ1234567890", {expiresIn: "1d"})
 
     // TOKEN_SECRAT= "abcedfghjklmnopqrstuvwxyzABCDEFGHJKLMNOPQRSTUVWXYZ1234567890"
 
     const response = NextResponse.json({
         message: "LoggedIn Successfully",
-        success: true
+        success: true,
+        token
     })
 
     response.cookies.set("token", token, {
