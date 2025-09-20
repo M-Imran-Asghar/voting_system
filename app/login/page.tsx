@@ -1,18 +1,33 @@
- "use client"
+"use client";
+import axios from 'axios';
 import Link from 'next/link';
-import React, { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import React, { useState, FormEvent, ChangeEvent } from 'react';
+import toast from 'react-hot-toast';
+
+
+interface FormData {
+  email: string;
+  password: string;
+}
+
+interface FormErrors {
+  email?: string;
+  password?: string;
+}
 
 function Login() {
-  const [formData, setFormData] = useState({
+  const router = useRouter();
+  const [formData, setFormData] = useState<FormData>({
     email: '',
     password: ''
   });
-  const [errors, setErrors] = useState({});
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [showPassword, setShowPassword] = useState(false);
-  const [rememberMe, setRememberMe] = useState(false);
+  const [errors, setErrors] = useState<FormErrors>({});
+  const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
+  const [showPassword, setShowPassword] = useState<boolean>(false);
+  const [rememberMe, setRememberMe] = useState<boolean>(false);
 
-  const handleChange = (e) => {
+  const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData({
       ...formData,
@@ -20,7 +35,7 @@ function Login() {
     });
     
     // Clear error when user types
-    if (errors[name]) {
+    if (errors[name as keyof FormErrors]) {
       setErrors({
         ...errors,
         [name]: ''
@@ -28,8 +43,8 @@ function Login() {
     }
   };
 
-  const validateForm = () => {
-    const newErrors = {};
+  const validateForm = (): FormErrors => {
+    const newErrors: FormErrors = {};
     
     if (!formData.email.trim()) {
       newErrors.email = 'Email is required';
@@ -44,18 +59,40 @@ function Login() {
     return newErrors;
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const newErrors = validateForm();
     
     if (Object.keys(newErrors).length === 0) {
       setIsSubmitting(true);
-      // Simulate API call
-      setTimeout(() => {
-        console.log('Login submitted:', formData, 'Remember me:', rememberMe);
-        alert('Login successful!');
+      try {
+        const response = await axios.post("/api/user/login/", formData);
+        console.log('Login successful:', response.data);
+        
+        // Store token if available
+        if (response.data.token) {
+          localStorage.setItem('token', response.data.token);
+        }
+        
+        toast('Login successful!');
+        
+        // // Redirect to dashboard or home page
+        // setTimeout(() => {
+        //   router.push('/dashboard'); // or '/'
+        // }, 1000);
+        
+      } catch (error: any) {
+        console.error('Login failed:', error);
+        if (error.response?.data?.error) {
+          toast(error.response.data.error);
+          return null
+        } else {
+          toast('Login failed. Please try again.');
+          return null
+        }
+      } finally {
         setIsSubmitting(false);
-      }, 1500);
+      }
     } else {
       setErrors(newErrors);
     }
@@ -66,7 +103,11 @@ function Login() {
   };
 
   const handleForgotPassword = () => {
-    alert('Password reset functionality would be implemented here.');
+    toast('Password reset functionality would be implemented here.');
+  };
+
+  const handleRememberMeChange = (e: ChangeEvent<HTMLInputElement>) => {
+    setRememberMe(e.target.checked);
   };
 
   return (
@@ -91,7 +132,7 @@ function Login() {
         {/* Right side with form */}
         <div className="p-8 md:w-3/5">
           <h1 className="text-3xl font-bold text-gray-800 mb-2">Login to Your Account</h1>
-          <p className="text-gray-600 mb-8">Enter your credentials to access your account</p>
+          <p className="text-gray-900 mb-8">Enter your credentials to access your account</p>
           
           <form onSubmit={handleSubmit}>
             <div className="flex flex-col mb-4">
@@ -102,7 +143,7 @@ function Login() {
                 value={formData.email}
                 onChange={handleChange}
                 placeholder="Enter your email" 
-                className={`border rounded-lg px-4 py-3 focus:outline-none focus:ring-2 ${errors.email ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-purple-500'}`}
+                className={`border text-black rounded-lg px-4 py-3 focus:outline-none focus:ring-2 ${errors.email ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-purple-500'}`}
               />
               {errors.email && <p className="text-red-500 text-sm mt-1">{errors.email}</p>}
             </div>
@@ -116,7 +157,7 @@ function Login() {
                   value={formData.password}
                   onChange={handleChange}
                   placeholder="Enter your password" 
-                  className={`border rounded-lg px-4 py-3 focus:outline-none focus:ring-2 w-full ${errors.password ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-purple-500'}`}
+                  className={`border text-black rounded-lg px-4 py-3 focus:outline-none focus:ring-2 w-full ${errors.password ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-purple-500'}`}
                 />
                 <button 
                   type="button" 
@@ -139,7 +180,15 @@ function Login() {
             </div>
             
             <div className="flex justify-between items-center mb-6">
-              
+              <label className="flex items-center">
+                <input 
+                  type="checkbox" 
+                  checked={rememberMe}
+                  onChange={handleRememberMeChange}
+                  className="w-4 h-4 text-purple-600 bg-gray-100 border-gray-300 rounded focus:ring-purple-500 focus:ring-2"
+                />
+                <span className="ml-2 text-sm text-gray-600">Remember me</span>
+              </label>
               <button 
                 type="button" 
                 onClick={handleForgotPassword}

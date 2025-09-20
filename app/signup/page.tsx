@@ -1,19 +1,34 @@
-"use client"
+"use client";
+import axios from 'axios';
 import Link from 'next/link';
-import React, { useState } from 'react';
+import React, { useState, FormEvent, ChangeEvent } from 'react';
+import { useRouter } from 'next/navigation';
+import toast from 'react-hot-toast';
+
+interface FormData {
+  name: string;
+  email: string;
+  password: string;
+}
+
+interface FormErrors {
+  name?: string;
+  email?: string;
+  password?: string;
+}
 
 function Signup() {
-  const [formData, setFormData] = useState({
-    username: '',
+  const [formData, setFormData] = useState<FormData>({
+    name: '',
     email: '',
     password: '',
-    confirmPassword: ''
   });
-  const [errors, setErrors] = useState({});
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [showPassword, setShowPassword] = useState(false);
+  const [errors, setErrors] = useState<FormErrors>({});
+  const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
+  const [showPassword, setShowPassword] = useState<boolean>(false);
+  const router = useRouter()
 
-  const handleChange = (e) => {
+  const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData({
       ...formData,
@@ -21,7 +36,7 @@ function Signup() {
     });
     
     // Clear error when user types
-    if (errors[name]) {
+    if (errors[name as keyof FormErrors]) {
       setErrors({
         ...errors,
         [name]: ''
@@ -29,11 +44,11 @@ function Signup() {
     }
   };
 
-  const validateForm = () => {
-    const newErrors = {};
+  const validateForm = (): FormErrors => {
+    const newErrors: FormErrors = {};
     
-    if (!formData.username.trim()) {
-      newErrors.username = 'Name is required';
+    if (!formData.name.trim()) {
+      newErrors.name = 'Name is required';
     }
     
     if (!formData.email.trim()) {
@@ -44,29 +59,41 @@ function Signup() {
     
     if (!formData.password) {
       newErrors.password = 'Password is required';
-    } else if (formData.password.length < 8) {
+    } else if (formData.password.length < 4) {
       newErrors.password = 'Password must be at least 8 characters';
-    }
-    
-    if (formData.password !== formData.confirmPassword) {
-      newErrors.confirmPassword = 'Passwords do not match';
     }
     
     return newErrors;
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const newErrors = validateForm();
     
     if (Object.keys(newErrors).length === 0) {
       setIsSubmitting(true);
-      // Simulate API call
-      setTimeout(() => {
-        console.log('Form submitted:', formData);
-        alert('Signup successful!');
+      try {
+        const response = await axios.post("/api/user/signup/", formData);
+        console.log(response.data);
+        
+        toast("Signup sucecessfully")
+        router.push('/login');
+        setFormData({
+          name: '',
+          email: '',
+          password: '',
+        });
+      } catch (error: any) {
+        console.error(error);
+        if (error.response?.data?.error) {
+          toast(error.response.data.error);
+          return
+        } else {
+          toast('Signup failed. Please try again.');
+        }
+      } finally {
         setIsSubmitting(false);
-      }, 1500);
+      }
     } else {
       setErrors(newErrors);
     }
@@ -102,16 +129,16 @@ function Signup() {
           
           <form onSubmit={handleSubmit}>
             <div className="flex flex-col mb-4">
-              <label htmlFor="username" className="text-gray-700 font-medium mb-2">Full Name</label>
+              <label htmlFor="name" className="text-gray-700 font-medium mb-2"> Name</label>
               <input 
                 type="text" 
-                name="username" 
-                value={formData.username}
+                name="name" 
+                value={formData.name}
                 onChange={handleChange}
-                placeholder="Enter your full name" 
-                className={`border rounded-lg px-4 py-3 focus:outline-none focus:ring-2 ${errors.username ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-purple-500'}`}
+                placeholder="Enter your  name" 
+                className={`border text-black rounded-lg px-4 py-3 focus:outline-none focus:ring-2 ${errors.name ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-purple-500'}`}
               />
-              {errors.username && <p className="text-red-500 text-sm mt-1">{errors.username}</p>}
+              {errors.name && <p className="text-red-500 text-sm mt-1">{errors.name}</p>}
             </div>
             
             <div className="flex flex-col mb-4">
@@ -122,7 +149,7 @@ function Signup() {
                 value={formData.email}
                 onChange={handleChange}
                 placeholder="Enter your email" 
-                className={`border rounded-lg px-4 py-3 focus:outline-none focus:ring-2 ${errors.email ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-purple-500'}`}
+                className={` text-grayborder text-black rounded-lg px-4 py-3 focus:outline-none focus:ring-2 ${errors.email ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-purple-500'}`}
               />
               {errors.email && <p className="text-red-500 text-sm mt-1">{errors.email}</p>}
             </div>
@@ -136,11 +163,11 @@ function Signup() {
                   value={formData.password}
                   onChange={handleChange}
                   placeholder="Create a password" 
-                  className={`border rounded-lg px-4 py-3 focus:outline-none focus:ring-2 w-full ${errors.password ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-purple-500'}`}
+                  className={`border text-black rounded-lg px-4 py-3 focus:outline-none focus:ring-2 w-full ${errors.password ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-purple-500'}`}
                 />
                 <button 
                   type="button" 
-                  className="absolute right-3 top-3 text-gray-500 hover:text-purple-600"
+                  className="absolute right-3 top-3 text-gray-900 hover:text-purple-600"
                   onClick={togglePasswordVisibility}
                 >
                   {showPassword ? (
@@ -156,19 +183,6 @@ function Signup() {
                 </button>
               </div>
               {errors.password && <p className="text-red-500 text-sm mt-1">{errors.password}</p>}
-            </div>
-            
-            <div className="flex flex-col mb-6">
-              <label htmlFor="confirmPassword" className="text-gray-700 font-medium mb-2">Confirm Password</label>
-              <input 
-                type="password" 
-                name="confirmPassword" 
-                value={formData.confirmPassword}
-                onChange={handleChange}
-                placeholder="Confirm your password" 
-                className={`border rounded-lg px-4 py-3 focus:outline-none focus:ring-2 ${errors.confirmPassword ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-purple-500'}`}
-              />
-              {errors.confirmPassword && <p className="text-red-500 text-sm mt-1">{errors.confirmPassword}</p>}
             </div>
             
             <button 

@@ -31,12 +31,14 @@ export async function POST(request: NextRequest) {
 
     const tokenData = {
         id: user._id,
-        email: user.email
+        email: user.email,
+        isAdmin: user.IsAdmin
     }
+    
+    const TOKEN_SECRAT= "abcedfghjklmnopqrstuvwxyzABCDEFGHJKLMNOPQRSTUVWXYZ1234567890"
+    
+    const token = jwt.sign(tokenData, TOKEN_SECRAT, {expiresIn: "1d"})
 
-    const token = jwt.sign(tokenData, "abcedfghjklmnopqrstuvwxyzABCDEFGHJKLMNOPQRSTUVWXYZ1234567890", {expiresIn: "1d"})
-
-    // TOKEN_SECRAT= "abcedfghjklmnopqrstuvwxyzABCDEFGHJKLMNOPQRSTUVWXYZ1234567890"
 
     const response = NextResponse.json({
         message: "LoggedIn Successfully",
