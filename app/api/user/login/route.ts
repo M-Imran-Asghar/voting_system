@@ -35,6 +35,7 @@ export async function POST(request: NextRequest) {
         isAdmin: user.IsAdmin
     }
     
+    // const TOKEN_SECRAT= process.env.TOKEN_SECRET!
     const TOKEN_SECRAT= "abcedfghjklmnopqrstuvwxyzABCDEFGHJKLMNOPQRSTUVWXYZ1234567890"
     
     const token = jwt.sign(tokenData, TOKEN_SECRAT, {expiresIn: "1d"})
