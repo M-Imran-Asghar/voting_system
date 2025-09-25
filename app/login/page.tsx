@@ -76,10 +76,10 @@ function Login() {
         
         toast('Login successful!');
         
-        // // Redirect to dashboard or home page
-        // setTimeout(() => {
-        //   router.push('/dashboard'); // or '/'
-        // }, 1000);
+        // Redirect to dashboard or home page
+        setTimeout(() => {
+          router.push('/adminPage'); 
+        }, 1000);
         
       } catch (error: any) {
         console.error('Login failed:', error);

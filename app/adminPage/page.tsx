@@ -1,4 +1,5 @@
 "use client"
+import axios from "axios";
 import React, { useState } from "react";
 
 const AdminPage: React.FC = () => {
@@ -46,23 +47,15 @@ const AdminPage: React.FC = () => {
       formData.append("startTime", startTime);
       formData.append("endTime", endTime);
 
-      const response = await fetch("/api/upload", {
-        method: "POST",
-        body: formData,
-      });
+      const response = await axios.post("/api/user/adminPage/",
+         formData,
+         { withCredentials: true }
+      );
 
-      if (response.ok) {
-        setMessage("Data submitted successfully!");
-        // Reset form
-        setImage1(null);
-        setImage2(null);
-        setName1("");
-        setName2("");
-        setStartTime("");
-        setEndTime("");
-      } else {
+      console.log(response);
+      
         setMessage("Failed to submit data");
-      }
+      
     } catch (error) {
       setMessage("Error submitting data");
       console.error("Error:", error);
