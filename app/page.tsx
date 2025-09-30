@@ -17,7 +17,7 @@ export default function Home() {
   const [personData, setPersonData] = useState<Person[]>([]);
   const [timeLeft, setTimeLeft] = useState({ hours: 0, minutes: 0, seconds: 0 });
 
-  // ✅ Vote handler (string ID)
+  
   const handleVoteBtn = (id: string): void => {
     setPersonData(prevData =>
       prevData.map(person =>
