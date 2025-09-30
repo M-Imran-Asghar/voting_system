@@ -27,7 +27,7 @@ export async function POST(request: NextRequest) {
         const { personOne, personTwo, imageOne, imageTwo, startTime, endTime } = reqBody;
 
         // Validation: Check if all required fields are present
-        if (!personOne || !personTwo || !imageOne || !imageTwo || !startTime || !endTime) {
+        if (!personOne || !personTwo  || !startTime || !endTime) {
             return NextResponse.json(
                 { message: "All fields are required" },
                 { status: 400 }
@@ -91,3 +91,31 @@ export async function POST(request: NextRequest) {
         );
     }
 }
+
+
+export async function GET(request: NextRequest) {
+  try {
+    const data = await Data.find()
+      .sort({ createdAt: -1 })
+      .select("-__v")      
+      .lean();
+
+    return NextResponse.json(
+      {
+        message: "Data retrieved successfully",
+        success: true,
+        data,
+        count: data.length,
+      },
+      { status: 200 }
+    );
+  } catch (error: any) {
+    console.error("Get data error:", error);
+
+    return NextResponse.json(
+      { message: error.message || "Internal server error" },
+      { status: 500 }
+    );
+  }
+}
+

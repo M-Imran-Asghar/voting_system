@@ -20,49 +20,97 @@ const AdminPage: React.FC = () => {
       }
     };
 
+  
+  const convertImageToBase64 = (file: File): Promise<string> => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = () => {
+      const base64String = (reader.result as string).split(',')[1]; 
+      resolve(base64String);
+    };
+    reader.onerror = error => reject(error);
+  });
+};
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-    setMessage("");
+  e.preventDefault();
+  setLoading(true);
+  setMessage("");
 
-    // Validation
-    if (!image1 || !image2 || !name1 || !name2 || !startTime || !endTime) {
-      setMessage("Please fill all fields");
-      setLoading(false);
-      return;
+  if (!image1 || !image2 || !name1 || !name2 || !startTime || !endTime) {
+    setMessage("Please fill all fields");
+    setLoading(false);
+    return;
+  }
+
+  if (new Date(startTime) >= new Date(endTime)) {
+    setMessage("End time must be after start time");
+    setLoading(false);
+    return;
+  }
+
+  try {
+    // Convert images to base64
+    const [base64Image1, base64Image2] = await Promise.all([
+      convertImageToBase64(image1),
+      convertImageToBase64(image2)
+    ]);
+
+    
+    const requestData = {
+      imageOne: base64Image1,    
+      imageTwo: base64Image2,    // Changed from image2 to imageTwo
+      personOne: name1,          // Changed from name1 to personOne
+      personTwo: name2,          // Changed from name2 to personTwo
+      startTime,
+      endTime
+    };
+
+    console.log("Sending data:", { 
+      ...requestData, 
+      imageOne: "base64...", // Don't log full base64 strings
+      imageTwo: "base64..." 
+    });
+
+    const response = await axios.post("/api/user/adminPage/", 
+      requestData,
+      { 
+        withCredentials: true,
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      }
+    );
+
+    if (response.status === 200 || response.status === 201) {
+      setMessage("Data submitted successfully!");
+      // Reset form
+      setImage1(null);
+      setImage2(null);
+      setName1("");
+      setName2("");
+      setStartTime("");
+      setEndTime("");
+    } else {
+      setMessage("Failed to submit data");
     }
-
-    if (new Date(startTime) >= new Date(endTime)) {
-      setMessage("End time must be after start time");
-      setLoading(false);
-      return;
-    }
-
-    try {
-      const formData = new FormData();
-      formData.append("image1", image1);
-      formData.append("image2", image2);
-      formData.append("name1", name1);
-      formData.append("name2", name2);
-      formData.append("startTime", startTime);
-      formData.append("endTime", endTime);
-
-      const response = await axios.post("/api/user/adminPage/",
-         formData,
-         { withCredentials: true }
-      );
-
-      console.log(response);
-      
-        setMessage("Failed to submit data");
-      
-    } catch (error) {
+  } catch (error: any) {
+    // More detailed error handling
+    if (error.response) {
+      // Server responded with error status
+      setMessage(`Error: ${error.response.data.message || 'Server error'}`);
+    } else if (error.request) {
+      // Request was made but no response received
+      setMessage("Network error - please check your connection");
+    } else {
+      // Something else happened
       setMessage("Error submitting data");
-      console.error("Error:", error);
-    } finally {
-      setLoading(false);
     }
-  };
+    console.error("Error:", error);
+  } finally {
+    setLoading(false);
+  }
+};
 
   return (
     <div className="p-4 bg-white h-[100vh]">
